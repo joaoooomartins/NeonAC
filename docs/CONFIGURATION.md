@@ -1,0 +1,98 @@
+# EarAC — Configuration
+
+All configuration lives in `config.yml` (generated on first start). Messages, alerts,
+punishments, checks, storage and version overrides are all editable **without recompiling**.
+
+## Top-level structure
+
+```yaml
+general:
+  prefix: "&8[&bEarAC&8]"
+  language: "pt-BR"
+  debug: false
+  profile: ""            # optional: competitive | minigames | <name>
+
+metrics:
+  enabled: true
+
+storage:
+  type: yaml             # yaml | sqlite | mysql | mariadb
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "earac"
+    user: "root"
+    password: ""
+    params: "useSSL=false&serverTimezone=UTC"
+
+alerts:
+  enabled: true
+  format: "%prefix% &7%player% &8falhou em &b%check% &8VL=&c%vl%"
+  combat: true
+  movement: true
+  player: true
+
+discord:
+  enabled: false
+  webhook: ""
+
+punishments:
+  enabled: true
+  - threshold: 10
+    commands:
+      - "kick %player% [EarAC] Comportamento suspeito"
+  - threshold: 25
+    commands:
+      - "tempban %player% 1h [EarAC] %check%"
+  - threshold: 50
+    commands:
+      - "ban %player% [EarAC] %check%"
+
+checks:
+  <category>:
+    <checkId>:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 2
+      max-reach: 3.2        # check-specific keys
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+
+versions:
+  "20":                   # per-version overrides (optional)
+    movement:
+      tolerance: 0.05
+
+messages:
+  prefix: "&8[&bEarAC&8]"
+  no-permission: "%prefix% &cVocê não possui permissão."
+  reload: "%prefix% &aConfiguração recarregada."
+```
+
+## Configurable keys per check
+
+| Key              | Meaning                                              |
+|------------------|------------------------------------------------------|
+| `enabled`        | Enable/disable the check.                            |
+| `threshold`      | VL at which alerts become meaningful (display).      |
+| `punish`         | VL at which punishment is triggered.                 |
+| `alert`          | VL at which staff alerts are sent.                   |
+| `vl.add`         | VL added per detection (× confidence).               |
+| `vl.decay`       | VL removed per decay cycle when idle.                |
+| `vl.max`         | VL clamp.                                            |
+
+Any check may define extra keys (e.g. `max-reach`, `max-cps`, `min-ticks`) which are
+read via `getConfig().getDouble("key", default)`.
+
+## Reload
+
+`/earac reload` reloads the file and re-applies `enabled`/`threshold` per check.
+
+## Placeholders
+
+`%player% %uuid% %check% %check_id% %category% %vl% %confidence% %ping% %tps%
+%version% %server% %prefix% %date% %time% %reason%` — usable in alerts, messages and
+punishment commands.

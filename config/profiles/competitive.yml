@@ -1,0 +1,31 @@
+# Competitive profile — stricter thresholds, faster punishments.
+# Applied on top of config.yml when general.profile: competitive
+
+checks:
+  combat:
+    killaura:
+      threshold: 6
+      punish: 20
+      vl:
+        add: 1.5
+        decay: 0.03
+    reach:
+      threshold: 5
+      punish: 20
+      max-reach: 3.0
+    autoclicker:
+      max-cps: 12.0
+  movement:
+    fly:
+      threshold: 6
+      min-air-ticks: 5
+    speed:
+      threshold: 6
+
+punishments:
+  - threshold: 20
+    commands:
+      - "tempban %player% 30m [EarAC] %check%"
+  - threshold: 40
+    commands:
+      - "ban %player% [EarAC] %check%"

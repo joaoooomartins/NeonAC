@@ -1,0 +1,7 @@
+rootProject.name = 'EarAC'
+
+include 'earac-api'
+include 'earac-core'
+include 'earac-checks'
+include 'earac-storage'
+include 'earac-versions'

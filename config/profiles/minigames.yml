@@ -1,0 +1,19 @@
+# Minigames profile — lenient. Many movement checks disabled, combat relaxed.
+# Applied on top of config.yml when general.profile: minigames
+
+checks:
+  movement:
+    fly:
+      enabled: false
+    jesus:
+      enabled: false
+    spider:
+      enabled: false
+  player:
+    fastbreak:
+      enabled: false
+    fastplace:
+      threshold: 30
+
+alerts:
+  player: false

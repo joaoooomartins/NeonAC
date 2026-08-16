@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+    id 'java-library'
+}
+
+allprojects {
+    group = 'com.earac'
+    version = project.findProperty('earacVersion') ?: '1.0.0'
+
+    repositories {
+        mavenCentral()
+        maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+    }
+}
+
+subprojects {
+    apply plugin: 'java-library'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        options.release = 17
+    }
+
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+        testImplementation 'org.mockito:mockito-core:5.11.0'
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+}

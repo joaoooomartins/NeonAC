@@ -1,0 +1,3 @@
+dependencies {
+    // Pure API module — no external dependencies.
+}

@@ -1,0 +1,4 @@
+dependencies {
+    api project(':earac-api')
+    implementation project(':earac-core')
+}
