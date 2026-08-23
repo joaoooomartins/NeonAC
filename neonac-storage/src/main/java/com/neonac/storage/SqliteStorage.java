@@ -38,7 +38,8 @@ public final class SqliteStorage extends JdbcStorage {
     protected String[] schemaStatements() {
         return new String[]{
                 "CREATE TABLE IF NOT EXISTS neonac_vl (uuid TEXT, check_id TEXT, vl REAL, PRIMARY KEY (uuid, check_id))",
-                "CREATE TABLE IF NOT EXISTS neonac_violations (id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, check_id TEXT, vl REAL, confidence REAL, ts BIGINT)"
+                "CREATE TABLE IF NOT EXISTS neonac_violations (id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, check_id TEXT, vl REAL, confidence REAL, ts BIGINT)",
+                "CREATE INDEX IF NOT EXISTS idx_violations_uuid ON neonac_violations(uuid)"
         };
     }
 

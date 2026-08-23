@@ -38,6 +38,9 @@ permissions:
   neonac.command.bypass:
     description: Grant temporary exemption
     default: op
+  neonac.command.mode:
+    description: Change operation mode
+    default: op
   neonac.alerts:
     description: Receive all staff alerts
     default: op
@@ -50,6 +53,12 @@ permissions:
   neonac.alerts.player:
     description: Receive player alerts
     default: op
+  neonac.alerts.world:
+    description: Receive world alerts
+    default: op
+  neonac.alerts.packet:
+    description: Receive packet alerts
+    default: op
   neonac.bypass:
     description: Bypass all checks
     default: false
@@ -61,4 +70,10 @@ permissions:
     default: false
   neonac.bypass.player:
     description: Bypass player checks
+    default: false
+  neonac.bypass.world:
+    description: Bypass world checks
+    default: false
+  neonac.bypass.packet:
+    description: Bypass packet checks
     default: false

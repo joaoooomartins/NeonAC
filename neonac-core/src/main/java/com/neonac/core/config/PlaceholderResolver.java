@@ -36,7 +36,7 @@ public final class PlaceholderResolver {
         m.put("confidence", String.format("%.2f", v.getConfidence()));
         m.put("ping", "?"); // filled by caller with player data
         m.put("tps", "20.0");
-        m.put("version", v.getCheck().getCategory().name());
+        m.put("version", "1.7.10");
         m.put("server", serverName);
         m.put("date", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
         m.put("time", new SimpleDateFormat("HH:mm:ss").format(new Date()));

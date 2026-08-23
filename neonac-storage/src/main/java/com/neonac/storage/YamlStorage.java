@@ -14,13 +14,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
+
 public final class YamlStorage implements Storage {
 
+    private static final Logger logger = Logger.getLogger("NeonAC-Storage");
     private final File file;
     private final Properties data = new Properties();
+    private final AtomicBoolean dirty = new AtomicBoolean(false);
+    private volatile long lastSave = System.currentTimeMillis();
+    private static final long SAVE_INTERVAL_MS = 5000;
+    private final List<Violation> recentViolations = new ArrayList<>();
 
     public YamlStorage(File dataFolder) {
-        this.file = new File(dataFolder, "storage.properties");
+        this.file = new File(dataFolder, "neonac.properties");
     }
 
     @Override
@@ -29,32 +37,32 @@ public final class YamlStorage implements Storage {
             try {
                 file.createNewFile();
             } catch (IOException e) {
-                throw new StorageException("Cannot create storage.properties", e);
+                throw new StorageException("Cannot create neonac.properties", e);
             }
         }
         try (FileInputStream in = new FileInputStream(file)) {
             data.load(in);
         } catch (IOException e) {
-            throw new StorageException("Cannot read storage.properties", e);
+            throw new StorageException("Cannot read neonac.properties", e);
         }
     }
 
     @Override
     public void shutdown() {
-        save();
+        saveNow();
     }
 
     @Override
     public void saveViolation(Violation violation) {
+        synchronized (recentViolations) {
+            recentViolations.add(0, violation);
+            while (recentViolations.size() > 200) recentViolations.remove(recentViolations.size() - 1);
+        }
         String key = "log." + violation.getPlayerUuid() + "." + System.nanoTime();
         data.setProperty(key, violation.getCheck().getId() + ":" + violation.getViolationLevel()
                 + ":" + violation.getConfidence());
-        List<String> keys = new ArrayList<>(data.stringPropertyNames());
-        if (keys.size() > 400) {
-            keys.stream().filter(k -> k.startsWith("log.")).sorted()
-                    .limit(keys.size() - 200).forEach(data::remove);
-        }
-        save();
+        trimLogs();
+        markDirty();
     }
 
     @Override
@@ -78,21 +86,24 @@ public final class YamlStorage implements Storage {
     @Override
     public void setViolationLevel(UUID playerUuid, String checkId, double vl) {
         data.setProperty("vl." + playerUuid + "." + checkId, Double.toString(vl));
-        save();
+        markDirty();
     }
 
     @Override
     public void resetViolationLevels(UUID playerUuid) {
         String prefix = "vl." + playerUuid + ".";
         data.stringPropertyNames().removeIf(k -> k.startsWith(prefix));
-        save();
+        markDirty();
     }
 
     @Override
     public List<Violation> getRecentViolations(UUID playerUuid, int limit) {
-        // Properties backend stores VL snapshots; full Violation reconstruction is delegated
-        // to JDBC backends. Returns empty for API parity.
-        return new ArrayList<>();
+        synchronized (recentViolations) {
+            return recentViolations.stream()
+                    .filter(v -> v.getPlayerUuid().equals(playerUuid.toString()))
+                    .limit(limit)
+                    .collect(java.util.stream.Collectors.toList());
+        }
     }
 
     @Override
@@ -100,10 +111,29 @@ public final class YamlStorage implements Storage {
         return data;
     }
 
-    private void save() {
+    private void markDirty() {
+        dirty.set(true);
+        if (System.currentTimeMillis() - lastSave > SAVE_INTERVAL_MS) {
+            saveNow();
+        }
+    }
+
+    private void saveNow() {
+        if (!dirty.compareAndSet(true, false)) return;
         try (FileOutputStream out = new FileOutputStream(file)) {
             data.store(out, "NeonAC storage");
-        } catch (IOException ignored) {
+            lastSave = System.currentTimeMillis();
+        } catch (IOException e) {
+            logger.warning("[NeonAC] Failed to save storage.properties: " + e.getMessage());
+            dirty.set(true);
+        }
+    }
+
+    private void trimLogs() {
+        List<String> keys = new ArrayList<>(data.stringPropertyNames());
+        if (keys.size() > 500) {
+            keys.stream().filter(k -> k.startsWith("log.")).sorted()
+                    .limit(keys.size() - 300).forEach(data::remove);
         }
     }
 }

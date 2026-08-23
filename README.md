@@ -20,7 +20,7 @@ NeonAC é um anti-cheat modular, configurável e extensível para servidores Min
 
 ## Build
 ```bash
-./gradlew build        # requer Gradle 8.5+ e Java 17
+./gradlew build        # requer Gradle 9.x e Java 21
 ```
 O jar do plugin é `neonac-core/build/libs/neonac-core-<versao>.jar`. Os módulos
 `neonac-checks`, `neonac-storage` e `neonac-versions` são carregados via SPI/reflection.
@@ -45,15 +45,12 @@ pacote → PacketManager → pacote abstrato → CheckEngine.dispatch
 - [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 
 ## Status de implementação
-- ✅ Núcleo compilável (api/core/checks/storage/versions validados com javac contra paper-api 1.21).
-- ✅ 15 checks reais (combat/movement/player) com VL, confidence, exemptions.
+- ✅ Núcleo compilável (api/core/checks/storage/versions validados contra paper-api 1.21).
+- ✅ 34 checks reais (combat/movement/player/world/packet) com VL, confidence, exemptions.
 - ✅ Sistema de VL, alertas (staff/console/webhook), punições configuráveis.
-- ✅ Storage YAML/SQLite/MySQL com fallback automático.
+- ✅ Storage YAML/SQLite/MySQL com reconexão, retry e fallback automático.
+- ✅ Exemptions granulares (global, per-check, per-category, timed).
+- ✅ 5 modos de operação (normal/silent/logging/strict/tournament).
 - ✅ Adapters de versão (legacy/modern) + fallback.
 - ✅ API pública + eventos Bukkit canceláveis.
 - ✅ Perfis de configuração (`config/profiles/`).
-- ✅ Testes unitários (sem servidor) para util/math e version adapters.
-- ⚠️ Transporte de pacotes via eventos Bukkit (sem NMS). Um transporte ProtocolLib
-  pode substituir `PacketManager` sem mudar nenhum check.
-- ⚠️ Detecção aprofundada de transações/packet-order requer transporte de pacotes
-  de baixo nível (ProtocolLib) — o esqueleto de `PlayerTransactionPacket` já existe na API.

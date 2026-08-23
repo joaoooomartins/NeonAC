@@ -1,9 +1,9 @@
 # NeonAC — Installation
 
 ## Requirements
-- Java 17+
+- Java 21+
 - A Bukkit/Spigot/Paper/Purpur/Folia server (1.7.10 – 26.2)
-- Gradle 8.x to build (or use a prebuilt jar)
+- Gradle 9.x to build (or use a prebuilt jar)
 
 ## Build
 

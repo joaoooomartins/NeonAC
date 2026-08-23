@@ -4,7 +4,6 @@ import com.neonac.api.check.Check;
 import com.neonac.api.check.CheckCategory;
 import com.neonac.api.check.CheckConfig;
 import com.neonac.api.check.CheckInfo;
-import com.neonac.api.packet.NeonACPacket;
 import com.neonac.api.packet.PlayerAttackPacket;
 import com.neonac.api.packet.PlayerDigPacket;
 import com.neonac.api.packet.PlayerMovePacket;
@@ -134,9 +133,5 @@ public abstract class AbstractCheck implements Check {
     }
     protected boolean isExempt(NeonACPlayer player) {
         return engine.getExemptionManager().isExempt(player, this);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected <T extends NeonACPacket> void record(NeonACPlayer player, String key, T packet) {
     }
 }

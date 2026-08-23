@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@CheckInfo(id = "velocity", name = "VelocityCheck", category = CheckCategory.COMBAT,
+@CheckInfo(id = "velocitycancel", name = "VelocityCancel", category = CheckCategory.COMBAT,
         description = "Invalid velocity cancel patterns", since = 7)
 public final class VelocityCheck extends AbstractCheck {
 

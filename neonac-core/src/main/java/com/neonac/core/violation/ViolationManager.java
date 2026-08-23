@@ -5,6 +5,8 @@ import com.neonac.api.player.NeonACPlayer;
 import com.neonac.api.violation.Violation;
 import com.neonac.core.NeonACPlugin;
 import com.neonac.core.alert.AlertManager;
+import com.neonac.core.mode.ModeLogger;
+import com.neonac.core.mode.ModeManager;
 import com.neonac.core.punishment.PunishmentManager;
 
 import java.util.Map;
@@ -17,6 +19,8 @@ public final class ViolationManager {
     private final NeonACPlugin plugin;
     private final AlertManager alertManager;
     private final PunishmentManager punishmentManager;
+    private ModeManager modeManager;
+    private ModeLogger modeLogger;
     private final Map<UUID, Map<String, Double>> levels = new ConcurrentHashMap<>();
     private final Map<UUID, Map<String, Long>> lastDetection = new ConcurrentHashMap<>();
     private final Set<UUID> dirty = ConcurrentHashMap.newKeySet();
@@ -27,24 +31,47 @@ public final class ViolationManager {
         this.punishmentManager = punishmentManager;
     }
 
+    public void setModeManager(ModeManager modeManager) {
+        this.modeManager = modeManager;
+    }
+
+    public void setModeLogger(ModeLogger modeLogger) {
+        this.modeLogger = modeLogger;
+    }
+
     public void flag(Check check, NeonACPlayer player, double vlAdded, double confidence, Map<String, ?> info) {
         UUID uuid = player.getUniqueId();
         Map<String, Double> pl = levels.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
         Map<String, Long> ld = lastDetection.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
 
+        double multiplier = modeManager != null ? modeManager.getVlMultiplier() : 1.0;
+        double adjustedVl = vlAdded * multiplier;
+
         double current = pl.getOrDefault(check.getId(), 0.0);
         double max = check.getConfig().getVlMax();
-        double next = Math.min(max, current + vlAdded);
+        double next = Math.min(max, current + adjustedVl);
         pl.put(check.getId(), next);
         ld.put(check.getId(), System.nanoTime());
         dirty.add(uuid);
 
-        Violation v = new ViolationImpl(uuid.toString(), player.getName(), check, vlAdded, next, confidence, info);
+        Violation v = new ViolationImpl(uuid.toString(), player.getName(), check, adjustedVl, next, confidence, info);
         com.neonac.core.api.ApiEventDispatcher.fireViolation(v);
+
+        if (modeManager != null && modeLogger != null) {
+            String mode = modeManager.getMode().name().toLowerCase();
+            if (modeManager.isSilent() || modeManager.isLogging()) {
+                modeLogger.log(v, mode);
+            }
+        }
+
+        if (modeManager != null && !modeManager.shouldAlert()) return;
 
         if (next >= check.getConfig().getAlertThreshold()) {
             alertManager.sendAlert(v);
         }
+
+        if (modeManager == null || !modeManager.shouldPunish()) return;
+
         double punishThreshold = check.getConfig().getPunishThreshold();
         if (punishThreshold > 0 && next >= punishThreshold) {
             punishmentManager.punish(v);

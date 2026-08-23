@@ -151,8 +151,6 @@ public final class ExemptionManager {
         if (player.getLastTeleportAge() < 1_000_000_000L) return true;
         if (player.getLastVelocityAge() < 1_200_000_000L) return true;
         if (player.isInWeb()) return true;
-        if (player.isOnLadder()) return true;
-        if (player.isInWater()) return true;
         if (player.isInLava()) return true;
         if (player.isGliding()) return true;
         if (player.isOnVehicle()) return true;

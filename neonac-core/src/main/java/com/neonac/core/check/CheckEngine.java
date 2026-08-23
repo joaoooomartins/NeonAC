@@ -105,7 +105,6 @@ public final class CheckEngine implements CheckRegistry {
         for (AbstractCheck c : checks.values()) {
             if (!c.isEnabled()) continue;
             if (!c.supports(player.getVersion())) continue;
-            if (player.isExempt(c.getId())) continue;
             metrics.recordCheck();
             c.onMove(player, packet);
         }
@@ -115,7 +114,6 @@ public final class CheckEngine implements CheckRegistry {
         for (AbstractCheck c : checks.values()) {
             if (!c.isEnabled()) continue;
             if (!c.supports(player.getVersion())) continue;
-            if (player.isExempt(c.getId())) continue;
             metrics.recordCheck();
             c.onAttack(player, packet);
         }
@@ -125,7 +123,6 @@ public final class CheckEngine implements CheckRegistry {
         for (AbstractCheck c : checks.values()) {
             if (!c.isEnabled()) continue;
             if (!c.supports(player.getVersion())) continue;
-            if (player.isExempt(c.getId())) continue;
             metrics.recordCheck();
             c.onDig(player, packet);
         }
@@ -135,7 +132,6 @@ public final class CheckEngine implements CheckRegistry {
         for (AbstractCheck c : checks.values()) {
             if (!c.isEnabled()) continue;
             if (!c.supports(player.getVersion())) continue;
-            if (player.isExempt(c.getId())) continue;
             metrics.recordCheck();
             c.onPlace(player, packet);
         }
@@ -154,7 +150,6 @@ public final class CheckEngine implements CheckRegistry {
             for (AbstractCheck c : checks.values()) {
                 if (!c.isEnabled()) continue;
                 if (!c.supports(p.getVersion())) continue;
-                if (p.isExempt(c.getId())) continue;
                 metrics.recordCheck();
                 c.onTick(p, tick);
             }

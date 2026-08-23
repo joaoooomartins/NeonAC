@@ -26,7 +26,10 @@ int ping = ep.getPing();
 api.registerCheck(myCheck);
 
 // Temporary exemption (e.g. minigame plugin)
-api.registerExemption(uuid, "killaura", ExemptionType.PLUGIN, 60_000L);
+api.addGlobalExemption(uuid, ExemptionType.PLUGIN, 60_000L);
+api.addCheckExemption(uuid, "killaura", ExemptionType.PLUGIN, 60_000L);
+api.addCategoryExemption(uuid, CheckCategory.COMBAT, ExemptionType.PLUGIN, 60_000L);
+api.removeExemption(uuid, ExemptionType.PLUGIN);
 
 // Version adapter (physics constants)
 VersionAdapter adapter = api.getVersionAdapter(ep.getVersion());

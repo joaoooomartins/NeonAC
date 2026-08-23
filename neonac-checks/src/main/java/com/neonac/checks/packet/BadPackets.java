@@ -2,7 +2,6 @@ package com.neonac.checks.packet;
 
 import com.neonac.api.check.CheckCategory;
 import com.neonac.api.check.CheckInfo;
-import com.neonac.api.packet.NeonACPacket;
 import com.neonac.api.player.NeonACPlayer;
 import com.neonac.core.check.AbstractCheck;
 import com.neonac.core.check.CheckEngine;

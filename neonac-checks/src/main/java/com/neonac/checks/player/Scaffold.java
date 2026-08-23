@@ -30,7 +30,6 @@ public final class Scaffold extends AbstractCheck {
     public void onPlace(NeonACPlayer player, PlayerPlacePacket packet) {
         if (isExempt(player)) return;
 
-        // Decode block position (x,y,z) from packed long.
         long pos = packet.getBlockPosition();
         int y = (int) ((pos >> 26) & 0xFFF);
 

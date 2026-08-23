@@ -10,6 +10,7 @@ general:
   prefix: "&8[&bNeonAC&8]"
   language: "pt-BR"
   debug: false
+  mode: "normal"         # normal | silent | logging | strict | tournament
   profile: ""            # optional: competitive | minigames | <name>
 
 metrics:
@@ -96,3 +97,15 @@ read via `getConfig().getDouble("key", default)`.
 `%player% %uuid% %check% %check_id% %category% %vl% %confidence% %ping% %tps%
 %version% %server% %prefix% %date% %time% %reason%` — usable in alerts, messages and
 punishment commands.
+
+## Operation Modes
+
+| Mode | Behavior |
+|---|---|
+| `normal` | Default. Detects, alerts, and punishes. |
+| `silent` | Detects but no alerts or punishments. Logs only. |
+| `logging` | Same as silent but writes detailed logs to file. |
+| `strict` | VL multiplier 1.5x. Alerts and punishes. |
+| `tournament` | Exempts everyone. No alerts or punishments. |
+
+Switch via `/neonac mode <mode>` or config `general.mode`.

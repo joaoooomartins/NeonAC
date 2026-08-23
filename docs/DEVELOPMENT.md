@@ -27,6 +27,7 @@ external dependencies, so it can be consumed by any plugin.
   `ViolationManager` (VL) → alerts/punishments. Never ban directly.
 - Heavy/blocking work (webhook, JDBC) runs async; Bukkit API calls stay on the main thread.
 - Exemptions are consulted before every flag.
+- Operation modes (normal/silent/logging/strict/tournament) control alert/punish behavior.
 
 ## Running tests
 ```bash

@@ -2,7 +2,6 @@ package com.neonac.api.check;
 
 import com.neonac.api.version.MinecraftVersion;
 
-import java.util.Set;
 public interface Check {
 
     String getId();

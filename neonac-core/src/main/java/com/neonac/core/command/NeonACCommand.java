@@ -7,6 +7,7 @@ import com.neonac.api.violation.Violation;
 import com.neonac.core.NeonACPlugin;
 import com.neonac.core.config.MessageManager;
 import com.neonac.core.debug.DebugManager;
+import com.neonac.core.mode.NeonACMode;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -82,6 +83,10 @@ public final class NeonACCommand implements TabExecutor {
                 sender.sendMessage(msg.getPrefix() + " &7Alerts enabled globally: &f"
                         + plugin.getConfigManager().getBoolean("alerts.enabled", true));
                 break;
+            case "mode":
+                if (!sender.hasPermission("neonac.command.mode")) return deny(sender, msg);
+                handleMode(sender, args);
+                break;
             default:
                 sendHelp(sender);
         }
@@ -98,7 +103,7 @@ public final class NeonACCommand implements TabExecutor {
 
     private void handleDebug(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &cUsage: /NeonAC debug <player>");
+            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &cUsage: /neonac debug <player>");
             return;
         }
         Player p = Bukkit.getPlayer(args[1]);
@@ -119,7 +124,7 @@ public final class NeonACCommand implements TabExecutor {
 
     private void handleViolations(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &cUsage: /NeonAC violations <player>");
+            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &cUsage: /neonac violations <player>");
             return;
         }
         Player p = Bukkit.getPlayer(args[1]);
@@ -137,7 +142,7 @@ public final class NeonACCommand implements TabExecutor {
 
     private void handleReset(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &cUsage: /NeonAC reset <player>");
+            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &cUsage: /neonac reset <player>");
             return;
         }
         Player p = Bukkit.getPlayer(args[1]);
@@ -151,7 +156,7 @@ public final class NeonACCommand implements TabExecutor {
 
     private void handlePunish(CommandSender sender, String[] args) {
         if (args.length < 3) {
-            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &cUsage: /NeonAC punish <player> <checkId>");
+            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &cUsage: /neonac punish <player> <checkId>");
             return;
         }
         Player p = Bukkit.getPlayer(args[1]);
@@ -213,26 +218,43 @@ public final class NeonACCommand implements TabExecutor {
         return true;
     }
 
+    private void handleMode(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            NeonACMode current = plugin.getModeManager().getMode();
+            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &7Current mode: &b" + current.name().toLowerCase());
+            sender.sendMessage(" &8Modes: &7normal, silent, logging, strict, tournament");
+            return;
+        }
+        try {
+            NeonACMode mode = NeonACMode.valueOf(args[1].toUpperCase());
+            plugin.getModeManager().setMode(mode);
+            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &7Mode set to &b" + mode.name().toLowerCase());
+        } catch (IllegalArgumentException e) {
+            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &cInvalid mode. Valid: normal, silent, logging, strict, tournament");
+        }
+    }
+
     private void sendHelp(CommandSender sender) {
         String p = plugin.getMessageManager().getPrefix();
         sender.sendMessage(p + " &bNeonAC &7commands:");
-        sender.sendMessage(" &8/&bNeonAC help &7- show this help");
-        sender.sendMessage(" &8/&bNeonAC reload &7- reload configuration");
-        sender.sendMessage(" &8/&bNeonAC version &7- version info");
-        sender.sendMessage(" &8/&bNeonAC checks &7- list checks");
-        sender.sendMessage(" &8/&bNeonAC info <player> &7- debug snapshot");
-        sender.sendMessage(" &8/&bNeonAC violations <player> &7- VL list");
-        sender.sendMessage(" &8/&bNeonAC reset <player> &7- reset VL");
+        sender.sendMessage(" &8/&bneonac help &7- show this help");
+        sender.sendMessage(" &8/&bneonac reload &7- reload configuration");
+        sender.sendMessage(" &8/&bneonac version &7- version info");
+        sender.sendMessage(" &8/&bneonac checks &7- list checks");
+        sender.sendMessage(" &8/&bneonac info <player> &7- debug snapshot");
+        sender.sendMessage(" &8/&bneonac violations <player> &7- VL list");
+        sender.sendMessage(" &8/&bneonac reset <player> &7- reset VL");
         sender.sendMessage(" &8/&bneonac punish <player> <check> &7- force punishment");
         sender.sendMessage(" &8/&bneonac bypass <player> [check|category:<cat>] &7- exemption");
+        sender.sendMessage(" &8/&bneonac mode [mode] &7- switch operation mode");
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> out = new ArrayList<>();
         if (args.length == 1) {
-            for (String s : new String[]{"help", "reload", "version", "checks", "info",
-                    "violations", "reset", "punish", "bypass", "alerts"}) {
+            for (String s : new String[]{"help", "reload", "version", "checks", "info", "debug",
+                    "violations", "reset", "punish", "bypass", "mode", "alerts"}) {
                 if (s.startsWith(args[0].toLowerCase())) out.add(s);
             }
         } else if (args.length == 2) {
@@ -248,6 +270,10 @@ public final class NeonACCommand implements TabExecutor {
             for (CheckCategory cat : CheckCategory.values()) {
                 String key = "category:" + cat.name().toLowerCase();
                 if (key.startsWith(prefix)) out.add(key);
+            }
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("mode")) {
+            for (NeonACMode m : NeonACMode.values()) {
+                if (m.name().toLowerCase().startsWith(args[1].toLowerCase())) out.add(m.name().toLowerCase());
             }
         }
         return out;

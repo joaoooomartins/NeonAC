@@ -7,7 +7,6 @@ import com.neonac.api.player.NeonACPlayer;
 import com.neonac.core.check.AbstractCheck;
 import com.neonac.core.check.CheckEngine;
 import com.neonac.core.combat.CombatEngine;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 
 import java.util.Map;

@@ -22,6 +22,7 @@ abstract class JdbcStorage implements Storage {
 
     protected Connection connection;
     protected final Logger logger = Logger.getLogger("NeonAC-Storage");
+    private final List<Violation> recentViolations = new ArrayList<>();
     private int retryCount = 3;
     private long retryDelayMs = 500;
 
@@ -124,6 +125,10 @@ abstract class JdbcStorage implements Storage {
 
     @Override
     public void saveViolation(Violation violation) {
+        synchronized (recentViolations) {
+            recentViolations.add(0, violation);
+            while (recentViolations.size() > 200) recentViolations.remove(recentViolations.size() - 1);
+        }
         executeWithRetry("saveViolation", conn -> {
             String sql = "INSERT INTO neonac_violations (uuid, check_id, vl, confidence, ts) VALUES (?,?,?,?,?)";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -195,7 +200,10 @@ abstract class JdbcStorage implements Storage {
 
     @Override
     public List<Violation> getRecentViolations(UUID playerUuid, int limit) {
-        return new ArrayList<>();
+        return recentViolations.stream()
+                .filter(v -> v.getPlayerUuid().equals(playerUuid.toString()))
+                .limit(limit)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Override

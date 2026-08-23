@@ -10,6 +10,8 @@ import com.neonac.core.config.MessageManager;
 import com.neonac.core.debug.DebugManager;
 import com.neonac.core.exemption.ExemptionManager;
 import com.neonac.core.metrics.Metrics;
+import com.neonac.core.mode.ModeLogger;
+import com.neonac.core.mode.ModeManager;
 import com.neonac.core.movement.MovementEngine;
 import com.neonac.core.packet.PacketManager;
 import com.neonac.core.player.PlayerManager;
@@ -41,6 +43,8 @@ public final class NeonACPlugin extends JavaPlugin implements Listener {
     private Metrics metrics;
     private DebugManager debugManager;
     private StorageManager storageManager;
+    private ModeManager modeManager;
+    private ModeLogger modeLogger;
     private CheckEngine checkEngine;
     private PacketManager packetManager;
 
@@ -70,9 +74,17 @@ public final class NeonACPlugin extends JavaPlugin implements Listener {
         storageManager = new StorageManager(configManager, getLogger());
         storageManager.init(getDataFolder());
 
+        modeManager = new ModeManager(configManager, getLogger());
+        modeManager.load();
+
+        modeLogger = new ModeLogger();
+        modeLogger.init(getDataFolder());
+
         alertManager = new AlertManager(this, configManager, messageManager, playerManager);
         punishmentManager = new PunishmentManager(this, configManager, messageManager, playerManager);
         violationManager = new ViolationManager(this, alertManager, punishmentManager);
+        violationManager.setModeManager(modeManager);
+        violationManager.setModeLogger(modeLogger);
 
         checkEngine = new CheckEngine(this, exemptionManager, violationManager,
                 playerManager, movementEngine, metrics);
@@ -99,6 +111,7 @@ public final class NeonACPlugin extends JavaPlugin implements Listener {
     public void onDisable() {
         persistAllVLs();
         if (storageManager != null) storageManager.shutdown();
+        if (modeLogger != null) modeLogger.shutdown();
         NeonACAPI.set(null);
     }
 
@@ -224,6 +237,10 @@ public final class NeonACPlugin extends JavaPlugin implements Listener {
 
     public StorageManager getStorageManager() {
         return storageManager;
+    }
+
+    public ModeManager getModeManager() {
+        return modeManager;
     }
 
     public CheckEngine getCheckEngine() {

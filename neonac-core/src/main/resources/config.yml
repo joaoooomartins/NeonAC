@@ -2,6 +2,7 @@ general:
   prefix: "&8[&bNeonAC&8]"
   language: "pt-BR"
   debug: false
+  mode: "normal"
 
 metrics:
   enabled: true
@@ -93,6 +94,42 @@ checks:
         add: 1.0
         decay: 0.1
         max: 100.0
+    velocitycancel:
+      enabled: true
+      threshold: 8
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.1
+        max: 100.0
+    criticals:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    fastbow:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    hitbox:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
   movement:
     fly:
       enabled: true
@@ -152,6 +189,51 @@ checks:
         add: 1.0
         decay: 0.05
         max: 100.0
+    sprint:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    waterwalk:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    boatfly:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    phase:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    longjump:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
   player:
     fastplace:
       enabled: true
@@ -179,6 +261,91 @@ checks:
       punish: 30
       alert: 1
       min-streak: 6
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    autoeat:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    nuker:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    cheststealer:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    fasteat:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    inventoryclick:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+
+  world:
+    xray:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    freecam:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+
+  packet:
+    badpackets:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    timer:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
       vl:
         add: 1.0
         decay: 0.05

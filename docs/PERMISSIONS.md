@@ -13,14 +13,17 @@ All permissions are configurable and default to `op` for staff commands.
 | `neonac.command.reset`     | op      | `/neonac reset`.               |
 | `neonac.command.punish`    | op      | `/neonac punish`.              |
 | `neonac.command.bypass`    | op      | `/neonac bypass`.              |
+| `neonac.command.mode`     | op      | `/neonac mode`.                |
 
 ## Alert permissions
-| Permission           | Purpose                                  |
-|----------------------|------------------------------------------|
-| `neonac.alerts`       | Receive all staff alerts.                |
-| `neonac.alerts.combat`| Receive combat-category alerts.          |
+| Permission             | Purpose                                  |
+|------------------------|------------------------------------------|
+| `neonac.alerts`        | Receive all staff alerts.                |
+| `neonac.alerts.combat` | Receive combat-category alerts.          |
 | `neonac.alerts.movement` | Receive movement-category alerts.     |
-| `neonac.alerts.player`| Receive player-category alerts.          |
+| `neonac.alerts.player` | Receive player-category alerts.          |
+| `neonac.alerts.world`  | Receive world-category alerts.           |
+| `neonac.alerts.packet` | Receive packet-category alerts.          |
 
 ## Bypass permissions (never granted by default)
 Bypass is **opt-in only** — a player must explicitly be given the node.
