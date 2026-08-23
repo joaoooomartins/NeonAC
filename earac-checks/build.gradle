@@ -1,5 +1,0 @@
-dependencies {
-    api project(':earac-api')
-    implementation project(':earac-core')
-    compileOnly 'io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT'
-}
