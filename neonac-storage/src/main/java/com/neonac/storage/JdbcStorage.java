@@ -15,19 +15,33 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 abstract class JdbcStorage implements Storage {
 
     protected Connection connection;
+    protected final Logger logger = Logger.getLogger("NeonAC-Storage");
+    private int retryCount = 3;
+    private long retryDelayMs = 500;
 
     protected abstract String buildUrl();
-
     protected abstract String[] schemaStatements();
     protected String[] getCredentials() {
         return null;
     }
 
+    protected void configureRetries(int count, long delayMs) {
+        this.retryCount = count;
+        this.retryDelayMs = delayMs;
+    }
+
     @Override
     public void init() throws StorageException {
+        connect();
+    }
+
+    private void connect() throws StorageException {
         String url = buildUrl();
         try {
             String[] creds = getCredentials();
@@ -44,8 +58,32 @@ abstract class JdbcStorage implements Storage {
         }
     }
 
-    @Override
-    public void shutdown() {
+    private boolean isValid() {
+        try {
+            return connection != null && !connection.isClosed() && connection.isValid(3);
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    private Connection getConnection() throws SQLException {
+        if (!isValid()) {
+            logger.warning("[NeonAC] Connection lost, reconnecting...");
+            reconnect();
+        }
+        return connection;
+    }
+
+    private void reconnect() throws SQLException {
+        closeQuietly();
+        String url = buildUrl();
+        String[] creds = getCredentials();
+        this.connection = creds != null
+                ? DriverManager.getConnection(url, creds[0], creds[1])
+                : DriverManager.getConnection(url);
+    }
+
+    private void closeQuietly() {
         try {
             if (connection != null && !connection.isClosed()) connection.close();
         } catch (SQLException ignored) {
@@ -53,82 +91,106 @@ abstract class JdbcStorage implements Storage {
     }
 
     @Override
-    public void saveViolation(Violation violation) {
-        String sql = "INSERT INTO NeonAC_violations (uuid, check_id, vl, confidence, ts) VALUES (?,?,?,?,?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, violation.getPlayerUuid());
-            ps.setString(2, violation.getCheck().getId());
-            ps.setDouble(3, violation.getViolationLevel());
-            ps.setDouble(4, violation.getConfidence());
-            ps.setLong(5, violation.getTimestamp());
-            ps.executeUpdate();
-        } catch (SQLException ignored) {
+    public void shutdown() {
+        closeQuietly();
+    }
+
+    private <T> T executeWithRetry(String desc, SqlAction<T> action) {
+        SQLException lastError = null;
+        for (int attempt = 0; attempt <= retryCount; attempt++) {
+            try {
+                return action.execute(getConnection());
+            } catch (SQLException e) {
+                lastError = e;
+                logger.log(Level.WARNING, "[NeonAC] " + desc + " failed (attempt " + (attempt + 1) + "): " + e.getMessage());
+                if (attempt < retryCount) {
+                    try {
+                        reconnect();
+                        Thread.sleep(retryDelayMs * (attempt + 1));
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    } catch (SQLException re) {
+                        logger.log(Level.WARNING, "[NeonAC] Reconnect failed: " + re.getMessage());
+                    }
+                }
+            }
         }
+        if (lastError != null) {
+            logger.log(Level.SEVERE, "[NeonAC] " + desc + " failed after " + (retryCount + 1) + " attempts", lastError);
+        }
+        return null;
+    }
+
+    @Override
+    public void saveViolation(Violation violation) {
+        executeWithRetry("saveViolation", conn -> {
+            String sql = "INSERT INTO neonac_violations (uuid, check_id, vl, confidence, ts) VALUES (?,?,?,?,?)";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, violation.getPlayerUuid());
+                ps.setString(2, violation.getCheck().getId());
+                ps.setDouble(3, violation.getViolationLevel());
+                ps.setDouble(4, violation.getConfidence());
+                ps.setLong(5, violation.getTimestamp());
+                ps.executeUpdate();
+            }
+            return null;
+        });
     }
 
     @Override
     public double getViolationLevel(UUID playerUuid, String checkId) {
-        String sql = "SELECT vl FROM NeonAC_vl WHERE uuid=? AND check_id=?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, playerUuid.toString());
-            ps.setString(2, checkId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getDouble("vl");
+        Double result = executeWithRetry("getVL", conn -> {
+            String sql = "SELECT vl FROM neonac_vl WHERE uuid=? AND check_id=?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, playerUuid.toString());
+                ps.setString(2, checkId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) return rs.getDouble("vl");
+                }
             }
-        } catch (SQLException ignored) {
-        }
-        return 0.0;
+            return 0.0;
+        });
+        return result != null ? result : 0.0;
     }
 
     @Override
     public Map<String, Double> getAllViolationLevels(UUID playerUuid) {
-        Map<String, Double> result = new LinkedHashMap<>();
-        String sql = "SELECT check_id, vl FROM NeonAC_vl WHERE uuid=?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, playerUuid.toString());
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    result.put(rs.getString("check_id"), rs.getDouble("vl"));
+        Map<String, Double> result = executeWithRetry("getAllVL", conn -> {
+            Map<String, Double> map = new LinkedHashMap<>();
+            String sql = "SELECT check_id, vl FROM neonac_vl WHERE uuid=?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, playerUuid.toString());
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        map.put(rs.getString("check_id"), rs.getDouble("vl"));
+                    }
                 }
             }
-        } catch (SQLException ignored) {
-        }
-        return result;
+            return map;
+        });
+        return result != null ? result : new LinkedHashMap<>();
     }
 
     @Override
     public void setViolationLevel(UUID playerUuid, String checkId, double vl) {
-        String sql = "INSERT INTO NeonAC_vl (uuid, check_id, vl) VALUES (?,?,?) "
-                + "ON DUPLICATE KEY UPDATE vl=?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, playerUuid.toString());
-            ps.setString(2, checkId);
-            ps.setDouble(3, vl);
-            ps.setDouble(4, vl);
-            ps.executeUpdate();
-        } catch (SQLException ignored) {
-            replaceVl(playerUuid, checkId, vl); // SQLite uses a different upsert; attempt REPLACE fallback.
-        }
+        executeWithRetry("setVL", conn -> {
+            upsertVl(conn, playerUuid, checkId, vl);
+            return null;
+        });
     }
 
-    private void replaceVl(UUID uuid, String checkId, double vl) {
-        try (PreparedStatement ps = connection.prepareStatement(
-                "INSERT OR REPLACE INTO NeonAC_vl (uuid, check_id, vl) VALUES (?,?,?)")) {
-            ps.setString(1, uuid.toString());
-            ps.setString(2, checkId);
-            ps.setDouble(3, vl);
-            ps.executeUpdate();
-        } catch (SQLException ignored) {
-        }
-    }
+    protected abstract void upsertVl(Connection conn, UUID uuid, String checkId, double vl) throws SQLException;
 
     @Override
     public void resetViolationLevels(UUID playerUuid) {
-        try (PreparedStatement ps = connection.prepareStatement("DELETE FROM NeonAC_vl WHERE uuid=?")) {
-            ps.setString(1, playerUuid.toString());
-            ps.executeUpdate();
-        } catch (SQLException ignored) {
-        }
+        executeWithRetry("resetVL", conn -> {
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM neonac_vl WHERE uuid=?")) {
+                ps.setString(1, playerUuid.toString());
+                ps.executeUpdate();
+            }
+            return null;
+        });
     }
 
     @Override
@@ -139,5 +201,10 @@ abstract class JdbcStorage implements Storage {
     @Override
     public Object getRawHandle() {
         return connection;
+    }
+
+    @FunctionalInterface
+    protected interface SqlAction<T> {
+        T execute(Connection conn) throws SQLException;
     }
 }

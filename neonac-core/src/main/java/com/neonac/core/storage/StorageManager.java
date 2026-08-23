@@ -72,6 +72,16 @@ public final class StorageManager {
         return storage;
     }
 
+    public boolean isHealthy() {
+        if (storage == null) return false;
+        try {
+            storage.getViolationLevel(UUID.fromString("00000000-0000-0000-0000-000000000000"), "healthcheck");
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     public void saveViolationAsync(Violation v) {
         if (storage == null) return;
         asyncPool.execute(() -> {
