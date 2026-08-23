@@ -1,6 +1,6 @@
-# EarAC — Version Support
+# NeonAC — Version Support
 
-EarAC targets **Minecraft 1.7.10 → 26.2**. Version concerns are isolated in adapters
+NeonAC targets **Minecraft 1.7.10 → 26.2**. Version concerns are isolated in adapters
 so checks never branch on a raw version number.
 
 ## Three distinct concepts
@@ -13,14 +13,14 @@ so checks never branch on a raw version number.
 
 ## Adapters
 
-`VersionAdapter` (`earac-api`) exposes physics constants and capability queries:
+`VersionAdapter` (`neonac-api`) exposes physics constants and capability queries:
 gravity, friction, step height, base speeds, elytra support, dig timing, tolerance.
 
-`earac-versions` registers concrete adapters:
+`neonac-versions` registers concrete adapters:
 - `LegacyVersionAdapter` for 1.7.10 – 1.8 (no elytra, old dig timing).
 - `ModernVersionAdapter` for 1.9+ (elytra, modern movement, modern dig timing).
 
-If `earac-versions` is absent, the core falls back to `FallbackVersionAdapter`
+If `neonac-versions` is absent, the core falls back to `FallbackVersionAdapter`
 (modern-ish, conservative). `VersionAdapterRegistry.get(version)` always returns the
 closest registered adapter at or below the requested version.
 
@@ -42,4 +42,4 @@ These are applied transparently by `CheckConfigImpl` — checks read a single
   event transport in this build. A ProtocolLib-backed transport can replace
   `PacketManager` without any check changes for deeper 1.7/1.8 packet semantics.
 - JDBC backends (SQLite/MySQL) require the corresponding driver jar on the server
-  classpath; if unavailable, EarAC automatically falls back to YAML storage.
+  classpath; if unavailable, NeonAC automatically falls back to YAML storage.

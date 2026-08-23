@@ -1,11 +1,11 @@
-# EarAC — Checks
+# NeonAC — Checks
 
-EarAC ships with a modular check engine. Every check extends `AbstractCheck` (core)
+NeonAC ships with a modular check engine. Every check extends `AbstractCheck` (core)
 and is registered via the `CheckProvider` SPI — no core changes are needed to add one.
 
 ## Implemented checks
 
-### Combat (`com.earac.checks.combat`)
+### Combat (`com.neonac.checks.combat`)
 | Check ID   | Name       | Method                                                                 |
 |------------|------------|-------------------------------------------------------------------------|
 | `killaura` | KillAura   | Flags attacks on targets beyond reach **or** outside the view angle.     |
@@ -14,7 +14,7 @@ and is registered via the `CheckProvider` SPI — no core changes are needed to 
 | `autoclicker` | AutoClicker | CPS + inter-click variance (robotic patterns).                       |
 | `velocity` | Velocity   | Verifies server knockback actually moves the player.                    |
 
-### Movement (`com.earac.checks.movement`)
+### Movement (`com.neonac.checks.movement`)
 | Check ID  | Name    | Method                                                                   |
 |-----------|---------|--------------------------------------------------------------------------|
 | `fly`     | Fly     | Sustained vertical suspension vs gravity prediction.                     |
@@ -24,7 +24,7 @@ and is registered via the `CheckProvider` SPI — no core changes are needed to 
 | `jesus`   | Jesus   | Horizontal movement on liquid surfaces without sinking.                 |
 | `spider`  | Spider  | Climbing walls without ladder/vine.                                     |
 
-### Player (`com.earac.checks.player`)
+### Player (`com.neonac.checks.player`)
 | Check ID     | Name       | Method                                                    |
 |--------------|------------|-----------------------------------------------------------|
 | `fastplace`  | FastPlace  | Block placement rate ceiling.                             |
@@ -48,12 +48,12 @@ suppress checks so legitimate players are not flagged.
 
 ## Adding a new check
 
-1. Create a class extending `com.earac.core.check.AbstractCheck`.
+1. Create a class extending `com.neonac.core.check.AbstractCheck`.
 2. Annotate with `@CheckInfo(id=, name=, category=, description=, since=, until=)`.
 3. Override the relevant `on*` hook (`onMove`, `onAttack`, `onDig`, `onPlace`,
    `onVelocity`, `onTick`).
 4. Call `flag(player, confidence, Map.of("key", value))` on detection.
-5. Register it in `EarACCheckProvider.registerChecks` (or your own `CheckProvider`).
+5. Register it in `NeonACCheckProvider.registerChecks` (or your own `CheckProvider`).
 
 ```java
 @CheckInfo(id = "aimc", name = "AimC", category = CheckCategory.COMBAT, description = "...")
@@ -61,7 +61,7 @@ public final class AimC extends AbstractCheck {
     public AimC(CheckEngine engine) { super(engine); }
 
     @Override
-    public void onMove(EarACPlayer p, PlayerMovePacket pkt) {
+    public void onMove(NeonACPlayer p, PlayerMovePacket pkt) {
         if (isExempt(p)) return;
         // ... compute confidence ...
         flag(p, confidence, "info", value);
@@ -70,4 +70,4 @@ public final class AimC extends AbstractCheck {
 ```
 
 No `if (version == ...)` is ever needed — version differences live in the
-`VersionAdapter` implementations (`earac-versions`), not in checks.
+`VersionAdapter` implementations (`neonac-versions`), not in checks.

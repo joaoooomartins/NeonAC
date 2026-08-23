@@ -1,4 +1,4 @@
-# EarAC — Configuration
+# NeonAC — Configuration
 
 All configuration lives in `config.yml` (generated on first start). Messages, alerts,
 punishments, checks, storage and version overrides are all editable **without recompiling**.
@@ -7,7 +7,7 @@ punishments, checks, storage and version overrides are all editable **without re
 
 ```yaml
 general:
-  prefix: "&8[&bEarAC&8]"
+  prefix: "&8[&bNeonAC&8]"
   language: "pt-BR"
   debug: false
   profile: ""            # optional: competitive | minigames | <name>
@@ -20,7 +20,7 @@ storage:
   mysql:
     host: "localhost"
     port: 3306
-    database: "earac"
+    database: "NeonAC"
     user: "root"
     password: ""
     params: "useSSL=false&serverTimezone=UTC"
@@ -40,13 +40,13 @@ punishments:
   enabled: true
   - threshold: 10
     commands:
-      - "kick %player% [EarAC] Comportamento suspeito"
+      - "kick %player% [NeonAC] Comportamento suspeito"
   - threshold: 25
     commands:
-      - "tempban %player% 1h [EarAC] %check%"
+      - "tempban %player% 1h [NeonAC] %check%"
   - threshold: 50
     commands:
-      - "ban %player% [EarAC] %check%"
+      - "ban %player% [NeonAC] %check%"
 
 checks:
   <category>:
@@ -67,7 +67,7 @@ versions:
       tolerance: 0.05
 
 messages:
-  prefix: "&8[&bEarAC&8]"
+  prefix: "&8[&bNeonAC&8]"
   no-permission: "%prefix% &cVocê não possui permissão."
   reload: "%prefix% &aConfiguração recarregada."
 ```
@@ -89,7 +89,7 @@ read via `getConfig().getDouble("key", default)`.
 
 ## Reload
 
-`/earac reload` reloads the file and re-applies `enabled`/`threshold` per check.
+`/neonac reload` reloads the file and re-applies `enabled`/`threshold` per check.
 
 ## Placeholders
 

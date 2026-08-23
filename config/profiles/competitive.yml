@@ -25,7 +25,7 @@ checks:
 punishments:
   - threshold: 20
     commands:
-      - "tempban %player% 30m [EarAC] %check%"
+      - "tempban %player% 30m [NeonAC] %check%"
   - threshold: 40
     commands:
-      - "ban %player% [EarAC] %check%"
+      - "ban %player% [NeonAC] %check%"

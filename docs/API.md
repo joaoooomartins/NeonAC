@@ -1,11 +1,11 @@
-# EarAC — API
+# NeonAC — API
 
-EarAC exposes a public API for other plugins (Maven/Gradle dependency on `earac-api`).
+NeonAC exposes a public API for other plugins (Maven/Gradle dependency on `neonac-api`).
 
 ## Obtaining the API
 
 ```java
-EarACAPI api = EarACAPI.get();
+NeonACAPI api = NeonACAPI.get();
 if (api == null || !api.isReady()) return;
 ```
 
@@ -18,7 +18,7 @@ UUID uuid = player.getUniqueId();
 double vl = api.getViolationLevel(uuid, "killaura");
 
 // Inspect a player
-EarACPlayer ep = api.getPlayer(uuid);
+NeonACPlayer ep = api.getPlayer(uuid);
 MinecraftVersion v = ep.getVersion();
 int ping = ep.getPing();
 
@@ -33,20 +33,20 @@ VersionAdapter adapter = api.getVersionAdapter(ep.getVersion());
 double gravity = adapter.getGravity();
 ```
 
-## Events (Bukkit events in `com.earac.core.api.events`)
+## Events (Bukkit events in `com.neonac.core.api.events`)
 
 | Event                    | Cancellable | Fired when…                                  |
 |--------------------------|-------------|----------------------------------------------|
-| `EarACViolationEvent`    | no          | A violation is recorded (after VL update).   |
-| `EarACAlertEvent`        | yes         | A staff alert is about to be sent.           |
-| `EarACPunishmentEvent`   | yes         | A punishment command is about to run.        |
-| `EarACCheckStateEvent`   | no          | A check is enabled/disabled at runtime.      |
+| `NeonACViolationEvent`    | no          | A violation is recorded (after VL update).   |
+| `NeonACAlertEvent`        | yes         | A staff alert is about to be sent.           |
+| `NeonACPunishmentEvent`   | yes         | A punishment command is about to run.        |
+| `NeonACCheckStateEvent`   | no          | A check is enabled/disabled at runtime.      |
 
 Listening example:
 
 ```java
 @EventHandler
-public void onPunish(EarACPunishmentEvent e) {
+public void onPunish(NeonACPunishmentEvent e) {
     if (e.getViolation().getCheck().getId().equals("killaura")) {
         e.setCancelled(true); // escalate your own way
     }
@@ -56,6 +56,6 @@ public void onPunish(EarACPunishmentEvent e) {
 ## Extension model
 
 Checks are discovered via `java.util.ServiceLoader` for `CheckProvider`. A module
-declares `META-INF/services/com.earac.api.check.CheckProvider` pointing at its
+declares `META-INF/services/com.neonac.api.check.CheckProvider` pointing at its
 provider class. The core calls `registerChecks(CheckRegistry)` on startup — so a
-separate plugin/extension can add checks without touching EarAC core.
+separate plugin/extension can add checks without touching NeonAC core.

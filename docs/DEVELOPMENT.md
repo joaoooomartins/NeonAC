@@ -1,23 +1,23 @@
-# EarAC — Development
+# NeonAC — Development
 
 ## Module layout
 ```
-EarAC/
-├── earac-api        pure interfaces, events, version/packet/player contracts
-├── earac-core       plugin, engines, managers, config, commands, packet bridge
-├── earac-protocol   (transport abstraction; PacketManager is the Bukkit bridge)
-├── earac-checks     concrete check implementations (CheckProvider SPI)
-├── earac-storage    YAML / SQLite / MySQL backends behind Storage
-└── earac-versions   per-version physics adapters
+NeonAC/
+├── neonac-api        pure interfaces, events, version/packet/player contracts
+├── neonac-core       plugin, engines, managers, config, commands, packet bridge
+├── neonac-protocol   (transport abstraction; PacketManager is the Bukkit bridge)
+├── neonac-checks     concrete check implementations (CheckProvider SPI)
+├── neonac-storage    YAML / SQLite / MySQL backends behind Storage
+└── neonac-versions   per-version physics adapters
 ```
 
 ## Build system
 Gradle multi-module. Dependency directions (no cycles):
 ```
-earac-api  ← earac-core, earac-storage, earac-versions, earac-checks
-earac-core ← earac-checks, earac-storage, earac-versions
+neonac-api  ← neonac-core, neonac-storage, neonac-versions, neonac-checks
+neonac-core ← neonac-checks, neonac-storage, neonac-versions
 ```
-`earac-core` depends on Bukkit/paper API (`compileOnly`). The API module has **no**
+`neonac-core` depends on Bukkit/paper API (`compileOnly`). The API module has **no**
 external dependencies, so it can be consumed by any plugin.
 
 ## Coding rules
@@ -36,5 +36,5 @@ Unit tests live in each module's `src/test/java`. Engine/version/check logic is 
 free of Bukkit where possible to allow headless testing.
 
 ## Adding a storage backend
-Implement `com.earac.api.storage.Storage` and register it in
+Implement `com.neonac.api.storage.Storage` and register it in
 `StorageManager.init()` (keyed by `storage.type`). No other changes required.

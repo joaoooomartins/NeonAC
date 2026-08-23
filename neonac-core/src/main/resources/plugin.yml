@@ -1,0 +1,64 @@
+name: NeonAC
+version: 1.0.0
+main: com.neonac.core.NeonACPlugin
+api-version: "1.13"
+author: noivado
+description: Professional, modular, multiversion anti-cheat.
+website: https://github.com/joaoooomartins/NeonAC
+
+commands:
+  neonac:
+    description: NeonAC main command
+    usage: /neonac <subcommand>
+    permission: neonac.command
+    aliases: [neonac, ac]
+
+permissions:
+  neonac.command:
+    description: Access to /neonac
+    default: op
+  neonac.command.reload:
+    description: Reload configuration
+    default: op
+  neonac.command.checks:
+    description: List checks
+    default: op
+  neonac.command.debug:
+    description: Debug a player
+    default: op
+  neonac.command.violations:
+    description: View violations
+    default: op
+  neonac.command.reset:
+    description: Reset a player's VL
+    default: op
+  neonac.command.punish:
+    description: Force a punishment
+    default: op
+  neonac.command.bypass:
+    description: Grant temporary exemption
+    default: op
+  neonac.alerts:
+    description: Receive all staff alerts
+    default: op
+  neonac.alerts.combat:
+    description: Receive combat alerts
+    default: op
+  neonac.alerts.movement:
+    description: Receive movement alerts
+    default: op
+  neonac.alerts.player:
+    description: Receive player alerts
+    default: op
+  neonac.bypass:
+    description: Bypass all checks
+    default: false
+  neonac.bypass.combat:
+    description: Bypass combat checks
+    default: false
+  neonac.bypass.movement:
+    description: Bypass movement checks
+    default: false
+  neonac.bypass.player:
+    description: Bypass player checks
+    default: false

@@ -1,6 +1,6 @@
-# EarAC — Anti-Cheat Minecraft Multiversão
+# NeonAC — Anti-Cheat Minecraft Multiversão
 
-EarAC é um anti-cheat modular, configurável e extensível para servidores Minecraft
+NeonAC é um anti-cheat modular, configurável e extensível para servidores Minecraft
 (1.7.10 até 26.2), focado em **precisão**, **baixos falsos positivos** e
 **compatibilidade**, usando predição de física por versão, acúmulo de Violation Level
 (VL), análise de contexto e múltiplas evidências.
@@ -8,13 +8,13 @@ EarAC é um anti-cheat modular, configurável e extensível para servidores Mine
 ## Módulos
 | Módulo           | Responsabilidade                                                       |
 |------------------|------------------------------------------------------------------------|
-| `earac-api`      | Interfaces puras, eventos, contratos de check/player/version/storage.  |
-| `earac-core`     | Plugin Bukkit, engines, managers, config, comandos, **camada de pacotes** (`com.earac.core.packet`). |
-| `earac-checks`   | Implementações concretas de checks (combat/movement/player).           |
-| `earac-storage`  | Backends YAML / SQLite / MySQL atrás de `Storage`.                    |
-| `earac-versions` | Adapters de física/constantes por versão.                             |
+| `neonac-api`      | Interfaces puras, eventos, contratos de check/player/version/storage.  |
+| `neonac-core`     | Plugin Bukkit, engines, managers, config, comandos, **camada de pacotes** (`com.neonac.core.packet`). |
+| `neonac-checks`   | Implementações concretas de checks (combat/movement/player).           |
+| `neonac-storage`  | Backends YAML / SQLite / MySQL atrás de `Storage`.                    |
+| `neonac-versions` | Adapters de física/constantes por versão.                             |
 
-> Nota de arquitetura: a "Packet/Protocol Layer" vive em `earac-core.packet`
+> Nota de arquitetura: a "Packet/Protocol Layer" vive em `neonac-core.packet`
 > (`PacketManager` traduz eventos Bukkit em pacotes abstratos). Isso evita um ciclo
 > de dependência e mantém os checks isolados de NMS.
 
@@ -22,8 +22,8 @@ EarAC é um anti-cheat modular, configurável e extensível para servidores Mine
 ```bash
 ./gradlew build        # requer Gradle 8.5+ e Java 17
 ```
-O jar do plugin é `earac-core/build/libs/earac-core-<versao>.jar`. Os módulos
-`earac-checks`, `earac-storage` e `earac-versions` são carregados via SPI/reflection.
+O jar do plugin é `neonac-core/build/libs/neonac-core-<versao>.jar`. Os módulos
+`neonac-checks`, `neonac-storage` e `neonac-versions` são carregados via SPI/reflection.
 
 ## Detection flow
 ```
