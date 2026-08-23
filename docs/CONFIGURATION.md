@@ -32,6 +32,8 @@ alerts:
   combat: true
   movement: true
   player: true
+  world: true
+  packet: true
 
 discord:
   enabled: false
@@ -39,15 +41,22 @@ discord:
 
 punishments:
   enabled: true
-  - threshold: 10
-    commands:
-      - "kick %player% [NeonAC] Comportamento suspeito"
-  - threshold: 25
-    commands:
-      - "tempban %player% 1h [NeonAC] %check%"
-  - threshold: 50
-    commands:
-      - "ban %player% [NeonAC] %check%"
+  cooldown: 30000
+  rules:
+    - threshold: 10
+      commands:
+        - "kick %player% [NeonAC] Comportamento suspeito"
+    - threshold: 25
+      commands:
+        - "tempban %player% 1h [NeonAC] %check%"
+    - threshold: 50
+      commands:
+        - "ban %player% [NeonAC] %check%"
+
+setback:
+  enabled: true
+  max-per-minute: 3
+  min-confidence: 0.7
 
 checks:
   <category>:
@@ -87,6 +96,24 @@ messages:
 
 Any check may define extra keys (e.g. `max-reach`, `max-cps`, `min-ticks`) which are
 read via `getConfig().getDouble("key", default)`.
+
+## Setback configuration
+
+| Key | Default | Meaning |
+|-----|---------|---------|
+| `setback.enabled` | `true` | Enable/disable setbacks (teleport to safe position). |
+| `setback.max-per-minute` | `3` | Maximum setbacks per player per minute. |
+| `setback.min-confidence` | `0.7` | Minimum confidence required to trigger setback. |
+
+Setbacks are triggered when VL reaches 50% of the punish threshold. The player is
+teleported to their last safe position (tracked by `SafePositionManager`).
+
+Exemptions from setback:
+- Player teleported in the last 500ms
+- Player received velocity in the last 1s
+- Player has `neonac.nosetback` or `neonac.nosetback.<checkid>` permission
+- Confidence below `min-confidence`
+- More than `max-per-minute` setbacks already applied
 
 ## Reload
 

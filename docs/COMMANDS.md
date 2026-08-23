@@ -16,6 +16,7 @@ Base command: `/neonac` (alias `/ac`). All sub-commands require the matching
 | `/neonac bypass <player> [target]`| Grant a 10-minute exemption. Target: nothing (global), check ID, or `category:<cat>` |
 | `/neonac mode [mode]`           | Switch operation mode. Modes: normal, silent, logging, strict, tournament |
 | `/neonac alerts`                 | Show whether global alerts are enabled.                  |
+| `/neonac verbose [player]`      | Toggle verbose mode (detailed flag output).              |
 
 ## Examples
 

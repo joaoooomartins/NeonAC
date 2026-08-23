@@ -34,6 +34,12 @@ api.removeExemption(uuid, ExemptionType.PLUGIN);
 // Version adapter (physics constants)
 VersionAdapter adapter = api.getVersionAdapter(ep.getVersion());
 double gravity = adapter.getGravity();
+
+// Setback management
+SetbackManager sb = api.getSetbackManager();
+if (sb != null && sb.isEnabled()) {
+    sb.trySetback(ep, check, confidence, info);
+}
 ```
 
 ## Events (Bukkit events in `com.neonac.core.api.events`)

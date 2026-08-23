@@ -44,6 +44,11 @@ punishments:
       commands:
         - "ban %player% [NeonAC] %check%"
 
+setback:
+  enabled: true
+  max-per-minute: 3
+  min-confidence: 0.7
+
 checks:
   combat:
     killaura:
@@ -198,6 +203,15 @@ checks:
         add: 1.0
         decay: 0.05
         max: 100.0
+    invalidsprint:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
     waterwalk:
       enabled: true
       threshold: 10
@@ -261,6 +275,93 @@ checks:
       punish: 30
       alert: 1
       min-streak: 6
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    farplace:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      max-reach: 4.5
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    invalidplacea:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      min-violations: 3
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    invalidplaceb:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    airliquidplace:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      min-count: 5
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    multiplace:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      max-per-tick: 3
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    fabricatedplace:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      min-violations: 3
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    positionplace:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    rotationplace:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      vl:
+        add: 1.0
+        decay: 0.05
+        max: 100.0
+    duplicaterotplace:
+      enabled: true
+      threshold: 10
+      punish: 30
+      alert: 1
+      min-duplicates: 3
       vl:
         add: 1.0
         decay: 0.05

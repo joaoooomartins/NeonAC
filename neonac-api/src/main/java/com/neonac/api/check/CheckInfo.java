@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface CheckInfo {
@@ -17,4 +18,8 @@ public @interface CheckInfo {
     String description() default "";
     int since() default 0;
     int until() default 0;
+
+    double decay() default 0.05;
+    double setback() default 0;
+    boolean experimental() default false;
 }

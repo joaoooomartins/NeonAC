@@ -87,6 +87,10 @@ public final class NeonACCommand implements TabExecutor {
                 if (!sender.hasPermission("neonac.command.mode")) return deny(sender, msg);
                 handleMode(sender, args);
                 break;
+            case "verbose":
+                if (!sender.hasPermission("neonac.verbose")) return deny(sender, msg);
+                handleVerbose(sender, args);
+                break;
             default:
                 sendHelp(sender);
         }
@@ -234,6 +238,22 @@ public final class NeonACCommand implements TabExecutor {
         }
     }
 
+    private void handleVerbose(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &cPlayers only.");
+            return;
+        }
+        Player p = (Player) sender;
+        boolean isVerbose = plugin.getAlertManager().isVerbose(p.getUniqueId());
+        if (isVerbose) {
+            plugin.getAlertManager().removeVerbose(p.getUniqueId());
+            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &7Verbose &cdisabled&7.");
+        } else {
+            plugin.getAlertManager().toggleVerbose(p.getUniqueId());
+            sender.sendMessage(plugin.getMessageManager().getPrefix() + " &7Verbose &aenabled&7.");
+        }
+    }
+
     private void sendHelp(CommandSender sender) {
         String p = plugin.getMessageManager().getPrefix();
         sender.sendMessage(p + " &bNeonAC &7commands:");
@@ -247,6 +267,7 @@ public final class NeonACCommand implements TabExecutor {
         sender.sendMessage(" &8/&bneonac punish <player> <check> &7- force punishment");
         sender.sendMessage(" &8/&bneonac bypass <player> [check|category:<cat>] &7- exemption");
         sender.sendMessage(" &8/&bneonac mode [mode] &7- switch operation mode");
+        sender.sendMessage(" &8/&bneonac verbose &7- toggle verbose alerts");
     }
 
     @Override
@@ -254,7 +275,7 @@ public final class NeonACCommand implements TabExecutor {
         List<String> out = new ArrayList<>();
         if (args.length == 1) {
             for (String s : new String[]{"help", "reload", "version", "checks", "info", "debug",
-                    "violations", "reset", "punish", "bypass", "mode", "alerts"}) {
+                    "violations", "reset", "punish", "bypass", "mode", "verbose", "alerts"}) {
                 if (s.startsWith(args[0].toLowerCase())) out.add(s);
             }
         } else if (args.length == 2) {

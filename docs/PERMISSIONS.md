@@ -14,6 +14,7 @@ All permissions are configurable and default to `op` for staff commands.
 | `neonac.command.punish`    | op      | `/neonac punish`.              |
 | `neonac.command.bypass`    | op      | `/neonac bypass`.              |
 | `neonac.command.mode`     | op      | `/neonac mode`.                |
+| `neonac.command.verbose`  | op      | `/neonac verbose`.             |
 
 ## Alert permissions
 | Permission             | Purpose                                  |
@@ -34,6 +35,17 @@ Bypass is **opt-in only** — a player must explicitly be given the node.
 | `neonac.bypass.combat.killaura` | Bypass a single check (id).     |
 | `neonac.bypass.movement`     | Bypass all movement checks.         |
 | `neonac.bypass.player`       | Bypass all player checks.           |
+
+## Setback permissions (never granted by default)
+| Permission                  | Effect                              |
+|-----------------------------|-------------------------------------|
+| `neonac.nosetback`           | Immune to all setbacks.             |
+| `neonac.nosetback.<id>`      | Immune to setback for a specific check. |
+
+## Verbose permissions
+| Permission                  | Effect                              |
+|-----------------------------|-------------------------------------|
+| `neonac.verbose`             | Toggle verbose mode per player.     |
 
 Bypass is applied per check via `Check#getBypassPermission()`, which is
 `neonac.bypass.<category>.<id>`.

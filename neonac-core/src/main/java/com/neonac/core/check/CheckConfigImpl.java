@@ -5,16 +5,22 @@ import com.neonac.api.version.MinecraftVersion;
 import com.neonac.core.config.ConfigManager;
 
 import java.util.List;
+
 public final class CheckConfigImpl implements CheckConfig {
 
     private final ConfigManager config;
     private final String base;
     private final MinecraftVersion version;
+    private final double annotationDecay;
+    private final double annotationSetback;
 
-    public CheckConfigImpl(ConfigManager config, String category, String checkName, MinecraftVersion version) {
+    public CheckConfigImpl(ConfigManager config, String category, String checkName,
+                           MinecraftVersion version, AbstractCheck check) {
         this.config = config;
         this.base = "checks." + category + "." + checkName;
         this.version = version;
+        this.annotationDecay = check.annotationDecay;
+        this.annotationSetback = check.annotationSetback;
     }
 
     private String vpath(String key) {
@@ -54,7 +60,8 @@ public final class CheckConfigImpl implements CheckConfig {
 
     @Override
     public double getPunishThreshold() {
-        return getDouble("punish", 0);
+        double v = getDouble("punish", 0);
+        return v != 0 ? v : annotationSetback;
     }
 
     @Override
@@ -69,7 +76,8 @@ public final class CheckConfigImpl implements CheckConfig {
 
     @Override
     public double getVlDecay() {
-        return getDouble("vl.decay", 0.05);
+        double v = getDouble("vl.decay", -1);
+        return v >= 0 ? v : annotationDecay;
     }
 
     @Override

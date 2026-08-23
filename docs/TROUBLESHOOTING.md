@@ -6,6 +6,13 @@
   with unusual movement.
 - Use `/neonac info <player>` to inspect environment flags — if `slime`/`ice`/`web`
   read incorrectly for your version, the issue is in a `VersionAdapter`, not the check.
+- If players are being teleported back incorrectly, check `setback.min-confidence`
+  (raise to reduce false setbacks) or disable `setback.enabled`.
+
+## Player being teleported back too often
+- Lower `setback.max-per-minute` in config.
+- Add `neonac.nosetback` permission for trusted players.
+- Check if the player has high ping (>400ms) which causes prediction mismatches.
 
 ## No alerts / no punishments
 - Check `alerts.enabled` and per-category toggles (`alerts.combat`, …).

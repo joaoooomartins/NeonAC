@@ -9,8 +9,10 @@ import com.neonac.core.player.PlayerData;
 import com.neonac.core.player.PlayerManager;
 import com.neonac.core.webhook.DiscordWebhook;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,6 +24,7 @@ public final class AlertManager {
     private final PlayerManager playerManager;
     private final String serverName;
     private final Map<String, Long> alertCooldowns = new ConcurrentHashMap<>();
+    private final Set<UUID> verbosePlayers = ConcurrentHashMap.newKeySet();
 
     public AlertManager(NeonACPlugin plugin, ConfigManager config, MessageManager messages, PlayerManager playerManager) {
         this.plugin = plugin;
@@ -59,6 +62,8 @@ public final class AlertManager {
         }
         Bukkit.getConsoleSender().sendMessage(line);
 
+        sendVerbose(v, ctx);
+
         if (config.getBoolean("discord.enabled", false)) {
             String webhook = config.getString("discord.webhook", "");
             if (!webhook.isEmpty()) {
@@ -69,6 +74,33 @@ public final class AlertManager {
                         () -> DiscordWebhook.send(webhook, content));
             }
         }
+    }
+
+    private void sendVerbose(Violation v, Map<String, Object> ctx) {
+        if (verbosePlayers.isEmpty()) return;
+        String verboseFormat = config.getString("alerts.verbose-format",
+                "%prefix% &7[verbose] &f%player% &b%check% &7VL=&c%vl% &7conf=&f%confidence%");
+        verboseFormat = verboseFormat.replace("%prefix%", messages.getPrefix());
+        String line = PlaceholderResolver.resolve(verboseFormat, ctx);
+
+        for (UUID uuid : verbosePlayers) {
+            Player p = Bukkit.getPlayer(uuid);
+            if (p != null && p.isOnline()) {
+                p.sendMessage(line);
+            }
+        }
+    }
+
+    public boolean toggleVerbose(UUID uuid) {
+        return verbosePlayers.add(uuid);
+    }
+
+    public boolean isVerbose(UUID uuid) {
+        return verbosePlayers.contains(uuid);
+    }
+
+    public void removeVerbose(UUID uuid) {
+        verbosePlayers.remove(uuid);
     }
 
     private Map<String, Object> buildContext(Violation v) {

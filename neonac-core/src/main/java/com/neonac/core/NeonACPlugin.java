@@ -16,6 +16,7 @@ import com.neonac.core.movement.MovementEngine;
 import com.neonac.core.packet.PacketManager;
 import com.neonac.core.player.PlayerManager;
 import com.neonac.core.punishment.PunishmentManager;
+import com.neonac.core.setback.SetbackManager;
 import com.neonac.core.storage.StorageManager;
 import com.neonac.core.version.VersionAdapterRegistry;
 import com.neonac.core.version.VersionDetector;
@@ -25,6 +26,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -47,6 +49,7 @@ public final class NeonACPlugin extends JavaPlugin implements Listener {
     private ModeLogger modeLogger;
     private CheckEngine checkEngine;
     private PacketManager packetManager;
+    private SetbackManager setbackManager;
 
     private MinecraftVersion serverVersion;
 
@@ -88,6 +91,10 @@ public final class NeonACPlugin extends JavaPlugin implements Listener {
 
         checkEngine = new CheckEngine(this, exemptionManager, violationManager,
                 playerManager, movementEngine, metrics);
+
+        setbackManager = new SetbackManager(this, checkEngine, violationManager, exemptionManager);
+        setbackManager.loadConfig();
+        checkEngine.setSetbackManager(setbackManager);
 
         loadChecks();
 
@@ -161,6 +168,7 @@ public final class NeonACPlugin extends JavaPlugin implements Listener {
 
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             violationManager.decayTick();
+            setbackManager.decayCounts();
             double tps = Math.min(20.0, Bukkit.getTPS()[0]);
             com.neonac.core.player.TpsTracker.update(tps);
             violationManager.cleanExpiredTimedExemptions();
@@ -179,6 +187,13 @@ public final class NeonACPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void onMove(PlayerMoveEvent e) {
+        if (e.getFrom().distanceSquared(e.getTo()) > 0.0001) {
+            setbackManager.onMove(e.getPlayer());
+        }
+    }
+
+    @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         java.util.UUID uuid = e.getPlayer().getUniqueId();
         playerManager.remove(uuid);
@@ -186,6 +201,7 @@ public final class NeonACPlugin extends JavaPlugin implements Listener {
         exemptionManager.removeAll(uuid);
         violationManager.reset(uuid);
         punishmentManager.clearCooldown(uuid);
+        setbackManager.removePlayer(uuid);
     }
 
     private void saveResourceIfAbsent(String name) {
@@ -245,6 +261,10 @@ public final class NeonACPlugin extends JavaPlugin implements Listener {
 
     public CheckEngine getCheckEngine() {
         return checkEngine;
+    }
+
+    public SetbackManager getSetbackManager() {
+        return setbackManager;
     }
 
     public MinecraftVersion getServerVersion() {

@@ -3,6 +3,12 @@ package com.neonac.core.check;
 import com.neonac.api.check.Check;
 import com.neonac.api.check.CheckCategory;
 import com.neonac.api.check.CheckRegistry;
+import com.neonac.api.check.listener.AttackListener;
+import com.neonac.api.check.listener.DigListener;
+import com.neonac.api.check.listener.MoveListener;
+import com.neonac.api.check.listener.PlaceListener;
+import com.neonac.api.check.listener.TickListener;
+import com.neonac.api.check.listener.VelocityListener;
 import com.neonac.api.player.NeonACPlayer;
 import com.neonac.api.packet.PlayerAttackPacket;
 import com.neonac.api.packet.PlayerDigPacket;
@@ -16,6 +22,7 @@ import com.neonac.core.metrics.Metrics;
 import com.neonac.core.movement.MovementEngine;
 import com.neonac.core.player.PlayerData;
 import com.neonac.core.player.PlayerManager;
+import com.neonac.core.setback.SetbackManager;
 import com.neonac.core.violation.ViolationManager;
 
 import java.util.ArrayList;
@@ -23,6 +30,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 public final class CheckEngine implements CheckRegistry {
 
     private final NeonACPlugin plugin;
@@ -31,8 +39,15 @@ public final class CheckEngine implements CheckRegistry {
     private final PlayerManager playerManager;
     private final MovementEngine movementEngine;
     private final Metrics metrics;
+    private SetbackManager setbackManager;
 
     private final Map<String, AbstractCheck> checks = new ConcurrentHashMap<>();
+    private final List<MoveListener> moveListeners = new ArrayList<>();
+    private final List<AttackListener> attackListeners = new ArrayList<>();
+    private final List<DigListener> digListeners = new ArrayList<>();
+    private final List<PlaceListener> placeListeners = new ArrayList<>();
+    private final List<VelocityListener> velocityListeners = new ArrayList<>();
+    private final List<TickListener> tickListeners = new ArrayList<>();
     private long tick = 0;
 
     public CheckEngine(NeonACPlugin plugin, ExemptionManager exemptionManager,
@@ -49,6 +64,12 @@ public final class CheckEngine implements CheckRegistry {
     public void register(AbstractCheck check) {
         check.initialize(plugin.getServerVersion());
         checks.put(check.getId(), check);
+        if (check instanceof MoveListener) moveListeners.add((MoveListener) check);
+        if (check instanceof AttackListener) attackListeners.add((AttackListener) check);
+        if (check instanceof DigListener) digListeners.add((DigListener) check);
+        if (check instanceof PlaceListener) placeListeners.add((PlaceListener) check);
+        if (check instanceof VelocityListener) velocityListeners.add((VelocityListener) check);
+        if (check instanceof TickListener) tickListeners.add((TickListener) check);
     }
 
     @Override
@@ -94,81 +115,94 @@ public final class CheckEngine implements CheckRegistry {
         violationManager.reset(java.util.UUID.fromString(uuid));
         movementEngine.reset(java.util.UUID.fromString(uuid));
     }
+
     public void flag(AbstractCheck check, NeonACPlayer player, double confidence, Map<String, ?> info) {
         if (!check.isEnabled()) return;
+        if (check.cachedExempt) return;
         if (exemptionManager.isExempt(player, check)) return;
         double vlAdd = check.getConfig().getVlAdd() * Math.max(0.0, Math.min(1.0, confidence));
         violationManager.flag(check, player, vlAdd, confidence, info);
         metrics.recordViolation();
+
+        if (setbackManager != null && setbackManager.isEnabled()) {
+            setbackManager.trySetback(player, check, confidence, info);
+        }
     }
+
+    public void setSetbackManager(SetbackManager setbackManager) {
+        this.setbackManager = setbackManager;
+    }
+
     public void dispatchMove(NeonACPlayer player, PlayerMovePacket packet) {
-        for (AbstractCheck c : checks.values()) {
-            if (!c.isEnabled()) continue;
-            if (!c.supports(player.getVersion())) continue;
+        for (MoveListener c : moveListeners) {
+            AbstractCheck ac = (AbstractCheck) c;
+            if (!ac.isEnabled()) continue;
+            if (!ac.supports(player.getVersion())) continue;
+            ac.updatePermissions(player);
             metrics.recordCheck();
             c.onMove(player, packet);
         }
     }
 
     public void dispatchAttack(NeonACPlayer player, PlayerAttackPacket packet) {
-        for (AbstractCheck c : checks.values()) {
-            if (!c.isEnabled()) continue;
-            if (!c.supports(player.getVersion())) continue;
+        for (AttackListener c : attackListeners) {
+            AbstractCheck ac = (AbstractCheck) c;
+            if (!ac.isEnabled()) continue;
+            if (!ac.supports(player.getVersion())) continue;
+            ac.updatePermissions(player);
             metrics.recordCheck();
             c.onAttack(player, packet);
         }
     }
 
     public void dispatchDig(NeonACPlayer player, PlayerDigPacket packet) {
-        for (AbstractCheck c : checks.values()) {
-            if (!c.isEnabled()) continue;
-            if (!c.supports(player.getVersion())) continue;
+        for (DigListener c : digListeners) {
+            AbstractCheck ac = (AbstractCheck) c;
+            if (!ac.isEnabled()) continue;
+            if (!ac.supports(player.getVersion())) continue;
+            ac.updatePermissions(player);
             metrics.recordCheck();
             c.onDig(player, packet);
         }
     }
 
     public void dispatchPlace(NeonACPlayer player, PlayerPlacePacket packet) {
-        for (AbstractCheck c : checks.values()) {
-            if (!c.isEnabled()) continue;
-            if (!c.supports(player.getVersion())) continue;
+        for (PlaceListener c : placeListeners) {
+            AbstractCheck ac = (AbstractCheck) c;
+            if (!ac.isEnabled()) continue;
+            if (!ac.supports(player.getVersion())) continue;
+            ac.updatePermissions(player);
             metrics.recordCheck();
             c.onPlace(player, packet);
         }
     }
 
     public void dispatchVelocity(NeonACPlayer player, PlayerVelocityPacket packet) {
-        for (AbstractCheck c : checks.values()) {
-            if (!c.isEnabled()) continue;
-            if (!c.supports(player.getVersion())) continue;
+        for (VelocityListener c : velocityListeners) {
+            AbstractCheck ac = (AbstractCheck) c;
+            if (!ac.isEnabled()) continue;
+            if (!ac.supports(player.getVersion())) continue;
+            ac.updatePermissions(player);
             c.onVelocity(player, packet);
         }
     }
+
     public void tick() {
         tick++;
         for (PlayerData p : playerManager.getAll()) {
-            for (AbstractCheck c : checks.values()) {
-                if (!c.isEnabled()) continue;
-                if (!c.supports(p.getVersion())) continue;
+            for (TickListener c : tickListeners) {
+                AbstractCheck ac = (AbstractCheck) c;
+                if (!ac.isEnabled()) continue;
+                if (!ac.supports(p.getVersion())) continue;
+                ac.updatePermissions(p);
                 metrics.recordCheck();
                 c.onTick(p, tick);
             }
         }
     }
 
-    public long getTick() {
-        return tick;
-    }
-
-    public MovementEngine getMovementEngine() {
-        return movementEngine;
-    }
-
-    public ExemptionManager getExemptionManager() {
-        return exemptionManager;
-    }
-
-    public NeonACPlugin getPlugin() {
-        return plugin;
-    }
+    public long getTick() { return tick; }
+    public MovementEngine getMovementEngine() { return movementEngine; }
+    public ExemptionManager getExemptionManager() { return exemptionManager; }
+    public NeonACPlugin getPlugin() { return plugin; }
 }

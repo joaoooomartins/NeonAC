@@ -14,17 +14,13 @@ cd NeonAC
 gradlew.bat build        # Windows
 ```
 
-Artifacts are produced per module under `*/build/libs/`. The plugin jar is
-`neonac-core/build/libs/neonac-core-<version>.jar`.
+The Shadow plugin produces a single fat JAR: `neonac-core/build/libs/NeonAC-1.0.0.jar`.
+All modules (api, core, checks, storage, versions) are bundled into this single JAR.
 
 ## Install
-1. Place `neonac-core-*.jar` in your server's `plugins/` folder.
-2. (Optional) place `neonac-checks-*.jar`, `neonac-versions-*.jar`,
-   `neonac-storage-*.jar` if you build them as separate jars — the core loads them
-   via SPI / reflection. Building via the root project bundles them automatically.
-3. Start the server. `config.yml` and `storage.properties` are generated under
-   `plugins/neonac/`.
-4. JDBC backends: drop the SQLite/MySQL driver jar in `plugins/` if you use
+1. Place `NeonAC-1.0.0.jar` in your server's `plugins/` folder.
+2. Start the server. `config.yml` is generated under `plugins/neonac/`.
+3. JDBC backends: drop the SQLite/MySQL driver jar in `plugins/` if you use
    `storage.type: sqlite|mysql`.
 
 ## Select a profile

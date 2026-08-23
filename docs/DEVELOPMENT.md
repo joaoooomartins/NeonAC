@@ -4,21 +4,41 @@
 ```
 NeonAC/
 ├── neonac-api        pure interfaces, events, version/packet/player contracts
-├── neonac-core       plugin, engines, managers, config, commands, packet bridge
-├── neonac-protocol   (transport abstraction; PacketManager is the Bukkit bridge)
+├── neonac-core       plugin, engines, managers, config, commands, prediction engine, packet bridge
 ├── neonac-checks     concrete check implementations (CheckProvider SPI)
 ├── neonac-storage    YAML / SQLite / MySQL backends behind Storage
 └── neonac-versions   per-version physics adapters
 ```
 
 ## Build system
-Gradle multi-module. Dependency directions (no cycles):
+Gradle multi-module. Shadow plugin bundles checks+versions into core:
 ```
 neonac-api  ← neonac-core, neonac-storage, neonac-versions, neonac-checks
-neonac-core ← neonac-checks, neonac-storage, neonac-versions
+neonac-core ← neonac-checks, neonac-storage, neonac-versions (via source sets)
 ```
 `neonac-core` depends on Bukkit/paper API (`compileOnly`). The API module has **no**
 external dependencies, so it can be consumed by any plugin.
+
+Output: `neonac-core/build/libs/NeonAC-1.0.0.jar` (single fat JAR).
+
+## Prediction engine
+The simplified prediction engine (`com.neonac.core.prediction`) simulates vanilla
+physics for movement checks:
+
+```
+PlayerData → gravidade, fricção, blocos, flags
+→ PredictionEngine.predict() → movimento estimado
+→ resolveCollision() → AABB collision com blocos
+→ SimulationCheck: offset = |actual - predicted|
+→ UncertaintyHandler reduz falsos positivos
+```
+
+Key classes:
+- `CollisionBox` — AABB com collideX/Y/Z
+- `CollisionMath` — Scan de blocos, detecção de colisão
+- `PredictionEngine` — Movimento com input, gravidade, fricção
+- `UncertaintyHandler` — Teleporte, velocity, ice, slime
+- `SetbackManager` — Teleporta para posição segura antes de punir
 
 ## Coding rules
 - Checks never read NMS or branch on `if (version == ...)`.

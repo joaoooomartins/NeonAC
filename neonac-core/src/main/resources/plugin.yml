@@ -41,6 +41,9 @@ permissions:
   neonac.command.mode:
     description: Change operation mode
     default: op
+  neonac.verbose:
+    description: Receive verbose alert output
+    default: op
   neonac.alerts:
     description: Receive all staff alerts
     default: op

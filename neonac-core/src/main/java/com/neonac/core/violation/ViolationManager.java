@@ -23,7 +23,10 @@ public final class ViolationManager {
     private ModeLogger modeLogger;
     private final Map<UUID, Map<String, Double>> levels = new ConcurrentHashMap<>();
     private final Map<UUID, Map<String, Long>> lastDetection = new ConcurrentHashMap<>();
+    private final Map<UUID, ViolationHistory> history = new ConcurrentHashMap<>();
     private final Set<UUID> dirty = ConcurrentHashMap.newKeySet();
+
+    private static final long DEFAULT_WINDOW_MS = 5 * 60 * 1000L;
 
     public ViolationManager(NeonACPlugin plugin, AlertManager alertManager, PunishmentManager punishmentManager) {
         this.plugin = plugin;
@@ -53,6 +56,9 @@ public final class ViolationManager {
         pl.put(check.getId(), next);
         ld.put(check.getId(), System.nanoTime());
         dirty.add(uuid);
+
+        ViolationHistory vh = history.computeIfAbsent(uuid, k -> new ViolationHistory(DEFAULT_WINDOW_MS));
+        vh.record(check.getId(), adjustedVl);
 
         Violation v = new ViolationImpl(uuid.toString(), player.getName(), check, adjustedVl, next, confidence, info);
         com.neonac.core.api.ApiEventDispatcher.fireViolation(v);
@@ -117,9 +123,14 @@ public final class ViolationManager {
         return levels.getOrDefault(uuid, new ConcurrentHashMap<>());
     }
 
+    public ViolationHistory getHistory(UUID uuid) {
+        return history.get(uuid);
+    }
+
     public void reset(UUID uuid) {
         levels.remove(uuid);
         lastDetection.remove(uuid);
+        history.remove(uuid);
         dirty.remove(uuid);
     }
 
